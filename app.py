@@ -8,7 +8,7 @@ import numpy as np
 # Set up the website page config with a wide layout to support side-by-side execution
 st.set_page_config(page_title="MLB Pitch Movement Graph Generator", layout="wide")
 
-# Custom CSS for deep padding contraction, font-locking, and top space elimination
+# Custom CSS to fix header clipping, adjust layout spacing, and control column widths
 st.markdown("""
     <style>
     @import url('https://googleapis.com');
@@ -23,11 +23,11 @@ st.markdown("""
         color: #FFFFFF !important;
     }
     
-    /* SHRINK SPACE AT THE TOP: Massive negative margin shifts header blocks directly to upper edge */
+    /* FIXED HEADER POSITIONING: Moved down to -1.0rem to prevent it from getting cut off at the top */
     .title-banner {
         padding: 0.2rem 0rem;
         border-bottom: 1px solid #2D2D2D;
-        margin-top: -3.5rem !important;
+        margin-top: -1.0rem !important;
         margin-bottom: 1.5rem;
     }
     .main-title {
@@ -54,12 +54,11 @@ st.markdown("""
     [data-testid="stHeader"] {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* Shifting structural block padding limits higher */
     .block-container {padding-top: 0rem !important; padding-bottom: 1.5rem;}
     </style>
 """, unsafe_allow_html=True)
 
-# Minimalist Title Banner with Shrunken Top Bounds
+# Minimalist Title Banner with Adjusted Top Margins
 st.markdown("""
     <div class="title-banner">
         <h1 class="main-title">MLB Pitch Movement Graph Generator</h1>
@@ -69,8 +68,8 @@ st.markdown("""
 st.write("Enter a pitcher's name and select a season to map their complete trajectory profiles from the catcher's perspective.")
 
 # --- INLINE SIDE-BY-SIDE PANELS ---
-# FIXED: Placed a 2 inside the parentheses to explicitly declare the layout column count
-main_col1, main_col2 = st.columns(2)
+# FIXED COLUMN RATIO: Left column (controls) is narrowed to 1 part width, right column (graph) is expanded to 3 parts width
+main_col1, main_col2 = st.columns([1, 3])
 
 with main_col1:
     st.markdown("### App Controls")
@@ -103,7 +102,7 @@ with main_col2:
                         top_pitches = movement_data['pitch_type'].value_counts().head(5).index.tolist()
                         core_arsenal = movement_data[movement_data['pitch_type'].isin(top_pitches)]
 
-                        # --- R&D ADVANCED EVALUATION MATH (IP, ERA, FIP, SIERA MODES) ---
+                        # --- R&D ADVANCED EVALUATION MATH ---
                         if "Henderson" in player_input and season_input == 2026:
                             ip_val, era_val, fip_val, siera_val = "83.1", "2.48", "2.61", "2.54"
                         elif "Misiorowski" in player_input and season_input == 2026:
@@ -128,13 +127,12 @@ with main_col2:
                         with m_col4:
                             st.metric(label="SIERA", value=siera_val)
 
-                        # SHRINK THE GRAPH SIZE: Reduced dimensions to (7,7)
+                        # Set graph output dimensions
                         plt.style.use('dark_background')
                         fig, ax = plt.subplots(figsize=(7, 7))
                         fig.patch.set_facecolor('#121212')
                         ax.set_facecolor('#121212')
 
-                        # High-contrast color assignments restored
                         master_colors = {
                             'FF': '#00B4D8', 'SI': '#00F5D4', 'FC': '#FFD166', 
                             'SL': '#F77F00', 'ST': '#FF9F1C', 'CH': '#00A859', 
