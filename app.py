@@ -69,13 +69,12 @@ st.markdown("""
 st.write("Enter a pitcher's name and select a season to map their complete trajectory profiles from the catcher's perspective.")
 
 # --- INLINE SIDE-BY-SIDE PANELS ---
-main_col1, main_col2 = st.columns()
+# FIXED: Placed a 2 inside the parentheses to explicitly declare the layout column count
+main_col1, main_col2 = st.columns(2)
 
 with main_col1:
     st.markdown("### App Controls")
     player_input = st.text_input("Player Name (Format: Last, First)", value="Henderson, Logan")
-    
-    # FIXED: The list of seasons is fully restored here to prevent the SyntaxError
     season_input = st.selectbox("Select Season", options=[2024, 2025, 2026], index=2)
 
 with main_col2:
