@@ -186,12 +186,26 @@ with main_col2:
                         ax.grid(True, linestyle=':', alpha=0.1, color='#FFFFFF')
                         ax.tick_params(colors='#8E9AAF', labelsize=7.5)
 
-                        # --- ANCHOR LEGEND OUT OF THE WAY IN LOWER LEFT ---
-                        legend = ax.legend(title='Pitch Arsenal', loc='lower left', frameon=True, facecolor='#1E293B', edgecolor='#2D2D2D', fontsize=7.5)
+                                               # --- ANCHOR LEGEND OUTSIDE AND BELOW THE PLOT GRID BOUNDS ---
+                        legend = ax.legend(
+                            title='Pitch Arsenal', 
+                            loc='upper center', 
+                            bbox_to_anchor=(0.5, -0.15),  # Dynamically shifts the box completely beneath the graph floor
+                            ncol=5,                       # Flattens the pitch elements into a single clean horizontal row
+                            frameon=True, 
+                            facecolor='#1E293B', 
+                            edgecolor='#2D2D2D', 
+                            fontsize=7                    # Subtle shrunken font size to maximize canvas breathing room
+                        )
                         legend.get_title().set_color('#FFFFFF')
                         legend.get_title().set_weight('bold')
+                        legend.get_title().set_fontsize(8)
                         for text in legend.get_texts():
                             text.set_color('#FFFFFF')
+
+                        # Fixed Bottom Right Quadrant Corner Placement
+                        ax.text(0.98, 0.03, 'Made by Elwood M-W', fontsize=7.5, fontweight='bold', color='#8E9AAF',
+                                style='italic', alpha=0.5, transform=ax.transAxes, ha='right', va='bottom')
 
                         # Fixed Bottom Right Quadrant Corner Placement
                         ax.text(0.98, 0.03, 'Made by Elwood M-W', fontsize=7.5, fontweight='bold', color='#8E9AAF',
