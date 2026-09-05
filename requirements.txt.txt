@@ -1,0 +1,6 @@
+streamlit
+pybaseball
+pandas
+numpy
+matplotlib
+seaborn
