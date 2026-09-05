@@ -193,8 +193,9 @@ with main_col2:
                         for text in legend.get_texts():
                             text.set_color('#FFFFFF')
 
-                        # Minimal Watermark
-                        ax.text(0.00, 0.00, 'Made by Elwood M-W', fontsize=7.5, fontweight='bold', color='#8E9AAF')
+                        # Fixed Bottom Right Quadrant Corner Placement
+                        ax.text(0.98, 0.03, 'Made by Elwood M-W', fontsize=7.5, fontweight='bold', color='#8E9AAF',
+                        style='italic', alpha=0.5, transform=ax.transAxes, ha='right', va='bottom')
                         st.pyplot(fig)
                         plt.close(fig)
             except Exception as e:
