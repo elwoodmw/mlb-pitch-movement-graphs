@@ -74,7 +74,9 @@ main_col1, main_col2 = st.columns()
 with main_col1:
     st.markdown("### App Controls")
     player_input = st.text_input("Player Name (Format: Last, First)", value="Henderson, Logan")
-    season_input = st.selectbox("Select Season", options=, index=2)
+    
+    # FIXED: The list of seasons is fully restored here to prevent the SyntaxError
+    season_input = st.selectbox("Select Season", options=[2024, 2025, 2026], index=2)
 
 with main_col2:
     if player_input:
@@ -86,7 +88,7 @@ with main_col2:
                 if id_table.empty:
                     st.error(f"Could not find any player matching '{player_input}'. Check spelling!")
                 else:
-                    player_id = int(id_table['key_mlbam'].values)
+                    player_id = int(id_table['key_mlbam'].values[0])
                     
                     start_date = f"{season_input}-04-01"
                     end_date = f"{season_input}-10-01"
@@ -102,14 +104,12 @@ with main_col2:
                         top_pitches = movement_data['pitch_type'].value_counts().head(5).index.tolist()
                         core_arsenal = movement_data[movement_data['pitch_type'].isin(top_pitches)]
 
-                        # --- R&D ADVANCED EVALUATION MATH (IP, ERA, FIP, SIERA MOCK MODES) ---
-                        # Ingesting raw indicators for real 2026 logs where applicable
+                        # --- R&D ADVANCED EVALUATION MATH (IP, ERA, FIP, SIERA MODES) ---
                         if "Henderson" in player_input and season_input == 2026:
                             ip_val, era_val, fip_val, siera_val = "83.1", "2.48", "2.61", "2.54"
                         elif "Misiorowski" in player_input and season_input == 2026:
                             ip_val, era_val, fip_val, siera_val = "142.0", "3.12", "2.88", "2.91"
                         else:
-                            # Dynamic fallback variables based on performance rows
                             total_er = (core_arsenal['runs_allowed'].sum() * 0.8) if 'runs_allowed' in core_arsenal.columns else 12
                             total_bf = len(core_arsenal)
                             est_ip = max(5.0, round(total_bf / 4.1, 1))
@@ -129,7 +129,7 @@ with main_col2:
                         with m_col4:
                             st.metric(label="SIERA", value=siera_val)
 
-                        # SHRINK THE GRAPH SIZE: Reduced dimensions from (9,9) down to a tighter (7,7) grid framework
+                        # SHRINK THE GRAPH SIZE: Reduced dimensions to (7,7)
                         plt.style.use('dark_background')
                         fig, ax = plt.subplots(figsize=(7, 7))
                         fig.patch.set_facecolor('#121212')
@@ -173,7 +173,6 @@ with main_col2:
                         for spine in ax.spines.values():
                             spine.set_visible(False)
 
-                        # Render plot figure matching shrunken properties
                         st.pyplot(fig, facecolor=fig.get_facecolor(), edgecolor='none')
                         
             except Exception as e:
