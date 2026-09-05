@@ -36,7 +36,6 @@ st.markdown("""
         margin-bottom: 0.2rem !important;
     }
     
-    /* Force sidebar input text and labels to be highly visible */
     [data-testid="stSidebar"] label p {
         color: #FFFFFF !important;
         font-weight: bold;
@@ -54,7 +53,6 @@ st.markdown("""
         line-height: 1.4 !important;
     }
     
-    /* Fixed visibility selectors for Streamlit UI elements */
     [data-testid="stHeader"] {visibility: hidden;}
     footer {visibility: hidden;}
     .block-container {padding-top: 1rem; padding-bottom: 2rem;}
@@ -75,9 +73,9 @@ st.sidebar.header("App Controls")
 player_input = st.sidebar.text_input("Player Name (Format: Last, First)", value="Henderson, Logan")
 season_input = st.sidebar.selectbox("Select Season", options=[2024, 2025, 2026], index=2)
 
-# --- PROCESSING ENGINE ---
-if st.sidebar.button("Generate Arsenal Plot 🔥"):
-    with st.spinner("Fetching Statcast metrics from MLB servers..."):
+# --- RUNS AUTOMATICALLY ON PAGE LOAD ---
+if player_input:
+    with st.spinner(f"Loading Statcast metrics for {player_input}..."):
         try:
             last, first = [n.strip() for n in player_input.split(',')]
             id_table = playerid_lookup(last, first)
@@ -85,7 +83,8 @@ if st.sidebar.button("Generate Arsenal Plot 🔥"):
             if id_table.empty:
                 st.error(f"Could not find any player matching '{player_input}'. Check spelling!")
             else:
-                player_id = int(id_table['key_mlbam'].iloc[0])
+                # FIX: Swapped out the broken array index for clean standard extraction
+                player_id = int(id_table['key_mlbam'].values[0])
                 
                 start_date = f"{season_input}-04-01"
                 end_date = f"{season_input}-10-01"
@@ -105,7 +104,7 @@ if st.sidebar.button("Generate Arsenal Plot 🔥"):
                     avg_velo = fastballs['release_speed'].mean() if not fastballs.empty else 0
                     total_pitches_tracked = len(core_arsenal)
 
-                    # Monotone Matplotlib Setup (Black, Whites, Greys)
+                    # Monotone Matplotlib Setup
                     plt.style.use('dark_background')
                     fig, ax = plt.subplots(figsize=(9, 9))
                     fig.patch.set_facecolor('#121212')
@@ -120,11 +119,9 @@ if st.sidebar.button("Generate Arsenal Plot 🔥"):
                         hue='pitch_type', palette=color_palette, alpha=0.6, s=45, edgecolor='none', ax=ax
                     )
 
-                    # Dark grey crosshairs
                     ax.axhline(0, color='#2D2D2D', linewidth=1.5, zorder=1)
                     ax.axvline(0, color='#2D2D2D', linewidth=1.5, zorder=1)
 
-                    # Clean Monotone Typography
                     ax.set_title(player_input.upper(), fontsize=24, fontweight=900, fontfamily='Inter', color='#FFFFFF', pad=20, loc='left')
                     ax.set_xlabel('← Glove-Side Break (Inches)  |  Arm-Side Run (Inches) →', fontsize=11, fontweight='bold', fontfamily='Inter', color='#A0A0A0', labelpad=12)
                     ax.set_ylabel('Induced Vertical Break (Inches)', fontsize=11, fontweight='bold', fontfamily='Inter', color='#A0A0A0', labelpad=12)
@@ -134,21 +131,18 @@ if st.sidebar.button("Generate Arsenal Plot 🔥"):
                     ax.grid(True, linestyle=':', alpha=0.1, color='#FFFFFF')
                     ax.tick_params(colors='#A0A0A0', labelsize=9)
                     
-                    # Refined Stark Legend Box
                     legend = ax.legend(title='Pitch Arsenal', loc='upper right', frameon=True, facecolor='#1A1A1A', edgecolor='#2D2D2D', fontsize=10)
                     legend.get_title().set_color('#FFFFFF')
                     legend.get_title().set_weight('bold')
                     for text in legend.get_texts():
                         text.set_color('#FFFFFF')
 
-                    # Clean Watermark
                     ax.text(0.98, 0.02, 'Made by Elwood M-W', fontsize=10, fontweight='bold', color='#A0A0A0',
                             style='italic', alpha=0.5, transform=ax.transAxes, ha='right', va='bottom')
 
                     for spine in ax.spines.values():
                         spine.set_visible(False)
 
-                    # Metric Display Section
                     col1, col2 = st.columns(2)
                     with col1:
                         st.metric(label="Total Pitches Tracked", value=f"{total_pitches_tracked:,}")
@@ -163,11 +157,11 @@ if st.sidebar.button("Generate Arsenal Plot 🔥"):
         except Exception as e:
             st.error(f"An unexpected parsing mismatch occurred: {e}")
 
-# Clean, professional data attribution footer
+# Exact text requested for the data footnote
 st.markdown("""
     <div class="footer-container">
         <p class="footer-text">
-            Data belongs to Major League Baseball. Data managed through the pybaseball framework.
+            Data belongs to Major League Baseball and is managed through the pybaseball framework.
         </p>
     </div>
 """, unsafe_allow_html=True)
