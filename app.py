@@ -69,7 +69,7 @@ st.markdown("""
     header {visibility: hidden;}
     .block-container {padding-top: 1rem; padding-bottom: 2rem;}
     </style>
-""", unsafe-with_html=True)
+""", unsafe_allow_html=True)
 
 # 2. BRAND NEW MINIMALIST HEADER INJECTION
 st.markdown("""
