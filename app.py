@@ -8,7 +8,7 @@ import numpy as np
 # Set up the website page config with a wide layout to support responsive tracking grids
 st.set_page_config(page_title="MLB Pitch Movement Graph Generator", layout="wide")
 
-# Custom CSS for flexible responsive column behaviors, precise font mappings, and clear spacing
+# Custom CSS for layout structural control, spacing expansion, and centering alignments
 st.markdown("""
     <style>
     @import url('https://googleapis.com');
@@ -49,6 +49,11 @@ st.markdown("""
         line-height: 1.4 !important;
     }
     
+    /* SHRINK INPUT TEXT BOX SIZE: Restricts max width of controls so they don't stretch excessively */
+    [data-testid="stTextInput"], [data-testid="stSelectbox"] {
+        max-width: 280px !important;
+    }
+    
     /* RESPONSIVE SC SCALE FIX: Forces the image output container to scale natively with browser zoom changes */
     [data-testid="stImage"] img {
         max-width: 100% !important;
@@ -64,7 +69,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Minimalist Title Banner with Shrunken Top Bounds
+# Minimalist Title Banner
 st.markdown("""
     <div class="title-banner">
         <h1 class="main-title">MLB Pitch Movement Graph Generator</h1>
@@ -73,14 +78,14 @@ st.markdown("""
 
 st.write("Enter a pitcher's name and select a season to map their complete trajectory profiles from the catcher's perspective.")
 
-# --- INLINE SIDE-BY-SIDE PANELS ---
-main_col1, main_col2 = st.columns(2)
+# --- SIDE-BY-SIDE CENTERING PANELS ---
+# FIXED LAYOUT GRID: Created a 5-column track grid layout to center-align the visual items cleanly on screen.
+# Column 1 empty space pushes controls inward, Column 2 holds controls, Column 3 provides wide space, Column 4 holds graphics.
+spacer_left, main_col1, gap_space, main_col2, spacer_right = st.columns([0.5, 1.5, 0.6, 4.0, 0.5])
 
 with main_col1:
     st.markdown("### App Controls")
     player_input = st.text_input("Player Name (Format: Last, First)", value="Henderson, Logan")
-    
-    # FIXED SEASONS ARRAY BLOCK: Explicitly closed with a bracket to resolve the SyntaxError perfectly
     season_input = st.selectbox("Select Season", options=[2024, 2025, 2026], index=2)
 
 with main_col2:
@@ -151,7 +156,7 @@ with main_col2:
                         with m_col3:
                             st.metric(label="K/BB", value=k_bb_val)
 
-                        # --- OPTIMIZED SHRINK SIZE CHART (4.3 x 4.3) ---
+                        # --- OPTIMIZED RE-SHRUNK CHART ---
                         plt.style.use('dark_background')
                         fig, ax = plt.subplots(figsize=(4.3, 4.3))
                         fig.patch.set_facecolor('#121212')
@@ -176,11 +181,11 @@ with main_col2:
                         ax.set_xlabel('← Glove-Side Break (Inches)  |  Arm-Side Run (Inches) →', fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', labelpad=8)
                         ax.set_ylabel('Induced Vertical Break (Inches)', fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', labelpad=8)
 
-                        ax.set_xlim(25, -25) 
+                        ax.set_xlim(25, -25)
                         ax.set_ylim(-25, 25)
                         ax.grid(True, linestyle=':', alpha=0.1, color='#FFFFFF')
                         ax.tick_params(colors='#8E9AAF', labelsize=7.5)
-                        
+
                         # --- ANCHOR LEGEND OUT OF THE WAY IN LOWER LEFT ---
                         legend = ax.legend(title='Pitch Arsenal', loc='lower left', frameon=True, facecolor='#1E293B', edgecolor='#2D2D2D', fontsize=7.5)
                         legend.get_title().set_color('#FFFFFF')
@@ -189,13 +194,8 @@ with main_col2:
                             text.set_color('#FFFFFF')
 
                         # Minimal Watermark
-                        ax.text(0.98, 0.02, 'Made by Elwood M-W', fontsize=7.5, fontweight='bold', color='#8E9AAF',
-                                style='italic', alpha=0.5, transform=ax.transAxes, ha='right', va='bottom')
-
-                        for spine in ax.spines.values():
-                            spine.set_visible(False)
-
-                        st.pyplot(fig, facecolor=fig.get_facecolor(), edgecolor='none')
-                        
+                        ax.text(0.98, 0.02, 'Made by Elwood M-W', fontsize=7.5, fontweight='bold', color='#8E9AAF')
+                        st.pyplot(fig)
+                        plt.close(fig)
             except Exception as e:
-                st
+                st.error(f"An error occurred while loading player data: {e}")
