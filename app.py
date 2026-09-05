@@ -6,69 +6,65 @@ import pandas as pd
 import numpy as np
 
 # Set up the website page config
-st.set_page_config(page_title="MLB Arsenal Analytics", layout="centered")
+st.set_page_config(page_title="MLB Pitch Movement Graph Generator", layout="centered")
 
-# Fix the syntax error by changing unsafe-with_html to unsafe_allow_html=True
+# Custom CSS for a professional, minimalist greyscale theme
 st.markdown("""
     <style>
     @import url('https://googleapis.com');
     
     html, body, [data-testid="stAppViewContainer"] {
-        background-color: #0A1128 !important;
+        background-color: #121212 !important;
         font-family: 'Inter', sans-serif !important;
     }
     
     h1, h2, h3, p, span, label {
         font-family: 'Inter', sans-serif !important;
+        color: #FFFFFF !important;
     }
     
     .title-banner {
         padding: 1.5rem 0rem;
-        border-bottom: 1px solid #1E293B;
+        border-bottom: 1px solid #2D2D2D;
         margin-bottom: 2rem;
     }
     .main-title {
         font-size: 2.2rem !important;
         font-weight: 900 !important;
         letter-spacing: -0.05em !important;
-        color: #FFD166 !important;
+        color: #FFFFFF !important;
         margin-bottom: 0.2rem !important;
-        text-transform: uppercase;
-    }
-    .sub-title {
-        font-size: 1.05rem !important;
-        font-weight: 400 !important;
-        color: #8E9AAF !important;
-        margin-top: 0px !important;
     }
     
-    .stMetric label, .stMetric div {
-        font-family: 'Inter', sans-serif !important;
+    /* Force sidebar input text and labels to be highly visible */
+    [data-testid="stSidebar"] label p {
+        color: #FFFFFF !important;
+        font-weight: bold;
     }
     
     .footer-container {
         margin-top: 5rem;
         padding-top: 1.5rem;
-        border-top: 1px solid #1E293B;
+        border-top: 1px solid #2D2D2D;
         text-align: center;
     }
     .footer-text {
         font-size: 0.8rem !important;
-        color: #4A5568 !important;
+        color: #A0A0A0 !important;
         line-height: 1.4 !important;
     }
     
-    #MainMenu {visibility: hidden;}
+    /* Fixed visibility selectors for Streamlit UI elements */
+    [data-testid="stHeader"] {visibility: hidden;}
     footer {visibility: hidden;}
-    header {visibility: hidden;}
     .block-container {padding-top: 1rem; padding-bottom: 2rem;}
     </style>
 """, unsafe_allow_html=True)
 
+# Minimalist Monotone Title Banner
 st.markdown("""
     <div class="title-banner">
-        <h1 class="main-title">MLB Arsenal Movement Analytics</h1>
-        <p class="sub-title">Statcast Aerodynamic Tracker & Aero-Deception Modeling</p>
+        <h1 class="main-title">MLB Pitch Movement Graph Generator</h1>
     </div>
 """, unsafe_allow_html=True)
 
@@ -109,47 +105,50 @@ if st.sidebar.button("Generate Arsenal Plot 🔥"):
                     avg_velo = fastballs['release_speed'].mean() if not fastballs.empty else 0
                     total_pitches_tracked = len(core_arsenal)
 
+                    # Monotone Matplotlib Setup (Black, Whites, Greys)
                     plt.style.use('dark_background')
                     fig, ax = plt.subplots(figsize=(9, 9))
-                    fig.patch.set_facecolor('#0A1128')
-                    ax.set_facecolor('#0A1128')
+                    fig.patch.set_facecolor('#121212')
+                    ax.set_facecolor('#121212')
 
-                    master_colors = {
-                        'FF': '#00B4D8', 'SI': '#00F5D4', 'FC': '#FFD166', 
-                        'SL': '#F77F00', 'ST': '#FF9F1C', 'CH': '#00A859', 
-                        'CU': '#7209B7', 'KC': '#9B5DE5', 'FS': '#FF006E'
-                    }
-                    color_palette = {p: master_colors.get(p, sns.color_palette("Set2")[i % 8]) for i, p in enumerate(top_pitches)}
+                    # Clean high-contrast monotone color palette mapping
+                    monotone_colors = ['#FFFFFF', '#AAAAAA', '#777777', '#444444', '#222222']
+                    color_palette = {p: monotone_colors[i % len(monotone_colors)] for i, p in enumerate(top_pitches)}
 
                     sns.scatterplot(
                         data=core_arsenal, x='horiz_break_in', y='vert_break_in',
-                        hue='pitch_type', palette=color_palette, alpha=0.4, s=45, edgecolor='none', ax=ax
+                        hue='pitch_type', palette=color_palette, alpha=0.6, s=45, edgecolor='none', ax=ax
                     )
 
-                    ax.axhline(0, color='#1E293B', linewidth=1.5, zorder=1)
-                    ax.axvline(0, color='#1E293B', linewidth=1.5, zorder=1)
+                    # Dark grey crosshairs
+                    ax.axhline(0, color='#2D2D2D', linewidth=1.5, zorder=1)
+                    ax.axvline(0, color='#2D2D2D', linewidth=1.5, zorder=1)
 
-                    ax.set_title(player_input.upper(), fontsize=24, fontweight=900, fontfamily='Inter', color='#FFD166', pad=20, loc='left')
-                    ax.set_xlabel('← Glove-Side Break (Inches)  |  Arm-Side Run (Inches) →', fontsize=11, fontweight='bold', fontfamily='Inter', color='#8E9AAF', labelpad=12)
-                    ax.set_ylabel('Induced Vertical Break (Inches)', fontsize=11, fontweight='bold', fontfamily='Inter', color='#8E9AAF', labelpad=12)
+                    # Clean Monotone Typography
+                    ax.set_title(player_input.upper(), fontsize=24, fontweight=900, fontfamily='Inter', color='#FFFFFF', pad=20, loc='left')
+                    ax.set_xlabel('← Glove-Side Break (Inches)  |  Arm-Side Run (Inches) →', fontsize=11, fontweight='bold', fontfamily='Inter', color='#A0A0A0', labelpad=12)
+                    ax.set_ylabel('Induced Vertical Break (Inches)', fontsize=11, fontweight='bold', fontfamily='Inter', color='#A0A0A0', labelpad=12)
 
                     ax.set_xlim(25, -25) 
                     ax.set_ylim(-25, 25)
                     ax.grid(True, linestyle=':', alpha=0.1, color='#FFFFFF')
-                    ax.tick_params(colors='#8E9AAF', labelsize=9)
+                    ax.tick_params(colors='#A0A0A0', labelsize=9)
                     
-                    legend = ax.legend(title='Pitch Arsenal', loc='upper right', frameon=True, facecolor='#1E293B', edgecolor='#1E293B', fontsize=10)
-                    legend.get_title().set_color('#FFD166')
+                    # Refined Stark Legend Box
+                    legend = ax.legend(title='Pitch Arsenal', loc='upper right', frameon=True, facecolor='#1A1A1A', edgecolor='#2D2D2D', fontsize=10)
+                    legend.get_title().set_color('#FFFFFF')
                     legend.get_title().set_weight('bold')
                     for text in legend.get_texts():
                         text.set_color('#FFFFFF')
 
-                    ax.text(0.98, 0.02, 'Made by Elwood M-W', fontsize=10, fontweight='bold', color='#8E9AAF',
-                            style='italic', alpha=0.6, transform=ax.transAxes, ha='right', va='bottom')
+                    # Clean Watermark
+                    ax.text(0.98, 0.02, 'Made by Elwood M-W', fontsize=10, fontweight='bold', color='#A0A0A0',
+                            style='italic', alpha=0.5, transform=ax.transAxes, ha='right', va='bottom')
 
                     for spine in ax.spines.values():
                         spine.set_visible(False)
 
+                    # Metric Display Section
                     col1, col2 = st.columns(2)
                     with col1:
                         st.metric(label="Total Pitches Tracked", value=f"{total_pitches_tracked:,}")
