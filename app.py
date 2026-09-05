@@ -17,7 +17,7 @@ st.sidebar.header("App Controls")
 player_input = st.sidebar.text_input("Player Name (Format: Last, First)", value="Misiorowski, Jacob")
 
 # CLEAN FIXED LINE: Full array of seasons supplied
-season_input = st.sidebar.selectbox("Select Season", options=[2021, 2022, 2023, 2024, 2025, 2026], index=5)
+season_input = st.sidebar.selectbox("Select Season", options=[2024, 2025, 2026], index=2)
 
 # --- PROCESSING ENGINE ---
 if st.sidebar.button("Generate Arsenal Plot 🔥"):
