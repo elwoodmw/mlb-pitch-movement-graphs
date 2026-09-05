@@ -27,11 +27,11 @@ if st.sidebar.button("Generate Arsenal Plot 🔥"):
             id_table = playerid_lookup(last, first)
             
             if id_table.empty:
-    st.error(f"Could not find any player matching '{player_input}'. Check spelling!")
-else:
-    # ADDED .values[0]: Safely extracts the first ID even if multiple rows return
-    player_id = int(id_table['key_mlbam'].values[0])
-                
+                st.error(f"Could not find any player matching '{player_input}'. Check spelling!")
+            else:
+                # ADDED .values[0]: Safely extracts the first ID even if multiple rows return
+                player_id = int(id_table['key_mlbam'].values[0])
+
                 # Fetch data dynamically
                 start_date = f"{season_input}-04-01"
                 end_date = f"{season_input}-10-01"
