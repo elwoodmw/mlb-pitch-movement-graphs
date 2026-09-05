@@ -5,22 +5,81 @@ from pybaseball import playerid_lookup, statcast_pitcher
 import pandas as pd
 import numpy as np
 
-# 1. Page Config with Custom CSS Injection for a Premium Dark UI
+# 1. Page Config with Custom Premium UI Injectors
 st.set_page_config(page_title="Elwood's MLB Arsenal Analytics", layout="centered")
 
-# Hide standard Streamlit header/footer branding for a cleaner look
+# FULL CSS REMODEL: Imports premium fonts, styles the title block, and cleans up spacing
 st.markdown("""
     <style>
+    @import url('https://googleapis.com');
+    
+    /* Global App Canvas Constraints */
+    html, body, [data-testid="stAppViewContainer"] {
+        background-color: #0A1128 !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    /* Universal Text Adjustments */
+    h1, h2, h3, p, span, label {
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    /* Minimalist Title Banner Design */
+    .title-banner {
+        padding: 1.5rem 0rem;
+        border-bottom: 1px solid #1E293B;
+        margin-bottom: 2rem;
+    }
+    .main-title {
+        font-size: 2.2rem !important;
+        font-weight: 900 !important;
+        letter-spacing: -0.05em !important;
+        color: #FFD166 !important;
+        margin-bottom: 0.2rem !important;
+        text-transform: uppercase;
+    }
+    .sub-title {
+        font-size: 1.05rem !important;
+        font-weight: 400 !important;
+        color: #8E9AAF !important;
+        margin-top: 0px !important;
+    }
+    
+    /* Code/Number Badge Font Locking */
+    .stMetric label, .stMetric div {
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    /* Seamless Footer Acknowledgements Alignment */
+    .footer-container {
+        margin-top: 5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #1E293B;
+        text-align: center;
+    }
+    .footer-text {
+        font-size: 0.8rem !important;
+        color: #4A5568 !important;
+        line-height: 1.4 !important;
+    }
+    
+    /* Streamlit Padding Overrides */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    .block-container {padding-top: 2rem;}
+    .block-container {padding-top: 1rem; padding-bottom: 2rem;}
     </style>
+""", unsafe-with_html=True)
+
+# 2. BRAND NEW MINIMALIST HEADER INJECTION
+st.markdown("""
+    <div class="title-banner">
+        <h1 class="main-title">MLB Arsenal Movement Analytics</h1>
+        <p class="sub-title">Interactive Statcast Aerodynamic Tracker & Aero-Deception Modeling</p>
+    </div>
 """, unsafe_allow_html=True)
 
-st.title("⚾ MLB Pitch Arsenal Movement Analytics")
-st.markdown("### Interactive Statcast Aerodynamic Tracker")
-st.write("Enter a pitcher's name and select a season to map their full movement profile.")
+st.write("Enter a pitcher's name in the left panel and select a season to map their complete trajectory profiles from the catcher's perspective.")
 
 # --- SIDEBAR CONTROLS ---
 st.sidebar.header("App Controls")
@@ -54,7 +113,7 @@ if st.sidebar.button("Generate Arsenal Plot 🔥"):
                     top_pitches = movement_data['pitch_type'].value_counts().head(5).index.tolist()
                     core_arsenal = movement_data[movement_data['pitch_type'].isin(top_pitches)]
 
-                    # CALCULATE KEY R&D SCALAR METRICS FOR DASHBOARD CARDS
+                    # Calculate Key Metrics for Display
                     fastballs = core_arsenal[core_arsenal['pitch_type'] == 'FF']
                     avg_velo = fastballs['release_speed'].mean() if not fastballs.empty else 0
                     total_pitches_tracked = len(core_arsenal)
@@ -62,8 +121,6 @@ if st.sidebar.button("Generate Arsenal Plot 🔥"):
                     # Build Figure with FULL SEAMLESS NAVY COATING
                     plt.style.use('dark_background')
                     fig, ax = plt.subplots(figsize=(9, 9))
-                    
-                    # FIX: Seamlessly force outer canvas background color to blend perfectly
                     fig.patch.set_facecolor('#0A1128')
                     ax.set_facecolor('#0A1128')
 
@@ -79,14 +136,14 @@ if st.sidebar.button("Generate Arsenal Plot 🔥"):
                         hue='pitch_type', palette=color_palette, alpha=0.4, s=45, edgecolor='none', ax=ax
                     )
 
-                    # Technical Crosshairs aligned with background color
+                    # Crosshairs
                     ax.axhline(0, color='#1E293B', linewidth=1.5, zorder=1)
                     ax.axvline(0, color='#1E293B', linewidth=1.5, zorder=1)
 
-                    # Formatting adjustments
-                    ax.set_title(player_input.upper(), fontsize=24, fontweight='black', color='#FFD166', pad=20, loc='left')
-                    ax.set_xlabel('← Glove-Side Break (Inches)  |  Arm-Side Run (Inches) →', fontsize=11, fontweight='bold', color='#8E9AAF', labelpad=12)
-                    ax.set_ylabel('Induced Vertical Break (Inches)', fontsize=11, fontweight='bold', color='#8E9AAF', labelpad=12)
+                    # Formatting Title inside graph to match premium Inter style
+                    ax.set_title(player_input.upper(), fontsize=24, fontweight=900, fontfamily='Inter', color='#FFD166', pad=20, loc='left')
+                    ax.set_xlabel('← Glove-Side Break (Inches)  |  Arm-Side Run (Inches) →', fontsize=11, fontweight='bold', fontfamily='Inter', color='#8E9AAF', labelpad=12)
+                    ax.set_ylabel('Induced Vertical Break (Inches)', fontsize=11, fontweight='bold', fontfamily='Inter', color='#8E9AAF', labelpad=12)
 
                     ax.set_xlim(25, -25) 
                     ax.set_ylim(-25, 25)
@@ -104,12 +161,10 @@ if st.sidebar.button("Generate Arsenal Plot 🔥"):
                     ax.text(0.98, 0.02, 'Made by Elwood M-W', fontsize=10, fontweight='bold', color='#8E9AAF',
                             style='italic', alpha=0.6, transform=ax.transAxes, ha='right', va='bottom')
 
-                    # Hide outer bounding frame line box for a cleaner look
                     for spine in ax.spines.values():
                         spine.set_visible(False)
 
                     # --- LIVE UI DISPLAY SECTION ---
-                    # Row of custom Metric Cards providing instant data summaries
                     col1, col2 = st.columns(2)
                     with col1:
                         st.metric(label="Total Pitches Tracked", value=f"{total_pitches_tracked:,}")
@@ -119,8 +174,19 @@ if st.sidebar.button("Generate Arsenal Plot 🔥"):
                         else:
                             st.metric(label="Avg 4-Seam Velocity", value="N/A")
 
-                    # Display the final polished plot figure asset
                     st.pyplot(fig, facecolor=fig.get_facecolor(), edgecolor='none')
                     
         except Exception as e:
             st.error(f"An unexpected parsing mismatch occurred: {e}")
+
+# 3. STATIC DATA ACKNOWLEDGEMENT FOOTER
+st.markdown("""
+    <div class="footer-container">
+        <p class="footer-text">
+            <strong>Data Acknowledgement & Compliance Statement</strong><br>
+            All trajectory coordinates and ball-flight parameters displayed on this portal are sourced from Major League Baseball's open-source Statcast tracking infrastructure.<br>
+            Data ingestion pipes managed utilizing the open-source <code>pybaseball</code> repository framework. Analytics algorithms and UI designs developed for sports research validation purposes.<br>
+            <em>© 2026 Sports Engineering Portfolio Project. Built by Elwood M-W. All rights reserved.</em>
+        </p>
+    </div>
+""", unsafe_allow_html=True)
