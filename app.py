@@ -16,7 +16,7 @@ st.markdown("""
     header {visibility: hidden;}
     .block-container {padding-top: 2rem;}
     </style>
-""", unsafe-with_html=True)
+""", unsafe_allow_html=True)
 
 st.title("⚾ MLB Pitch Arsenal Movement Analytics")
 st.markdown("### Interactive Statcast Aerodynamic Tracker")
