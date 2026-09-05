@@ -194,7 +194,7 @@ with main_col2:
                             text.set_color('#FFFFFF')
 
                         # Minimal Watermark
-                        ax.text(0.98, 0.02, 'Made by Elwood M-W', fontsize=7.5, fontweight='bold', color='#8E9AAF')
+                        ax.text(0.00, 0.00, 'Made by Elwood M-W', fontsize=7.5, fontweight='bold', color='#8E9AAF')
                         st.pyplot(fig)
                         plt.close(fig)
             except Exception as e:
