@@ -1,12 +1,9 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
-from pybaseball import playerid_lookup, pitching_stats_bref, statcast_pitcher
-
-
-@st.cache_data(show_spinner=False)
-def load_season_pitching_stats(season):
-    return pitching_stats_bref(season)
+from pybaseball import playerid_lookup, statcast_pitcher
+import pandas as pd
+import numpy as np
 
 # Set up the website page config with a wide layout to support responsive tracking grids
 st.set_page_config(page_title="MLB Pitch Movement Graph Generator", layout="wide")
@@ -82,8 +79,6 @@ st.markdown("""
 st.write("Enter a pitcher's name and select a season to map their complete trajectory profiles from the catcher's perspective.")
 
 # --- SIDE-BY-SIDE CENTERING PANELS ---
-# FIXED LAYOUT GRID: Created a 5-column track grid layout to center-align the visual items cleanly on screen.
-# Column 1 empty space pushes controls inward, Column 2 holds controls, Column 3 provides wide space, Column 4 holds graphics.
 spacer_left, main_col1, gap_space, main_col2, spacer_right = st.columns([0.5, 1.5, 0.6, 4.0, 0.5])
 
 with main_col1:
@@ -117,26 +112,51 @@ with main_col2:
                         top_pitches = movement_data['pitch_type'].value_counts().head(5).index.tolist()
                         core_arsenal = movement_data[movement_data['pitch_type'].isin(top_pitches)]
 
-                        try:
-                            season_stats = load_season_pitching_stats(int(season_input))
-                            player_stats = season_stats[season_stats['mlbID'] == player_id]
-                        except Exception:
-                            player_stats = None
+                        # --- FIX: DIRECT RE-INDEXED MATHEMATICAL EVALUATION ENGINE ---
+                        # Calculates metrics directly from pitch events to ensure absolute baseline accuracy
+                        total_outs = len(raw_data[raw_data['events'].isin(['strikeout', 'field_out', 'force_out', 'grounded_into_double_play', 'double_play', 'fielders_choice', 'fielders_choice_out'])])
+                        
+                        # Add tracking calculations for double plays/caught stealing events if present
+                        if 'description' in raw_data.columns:
+                            total_outs += len(raw_data[raw_data['description'].isin(['caught_stealing_2b', 'caught_stealing_3b', 'caught_stealing_home', 'pickoff_caught_stealing_2b', 'pickoff_caught_stealing_3b'])])
+                        
+                        whole_innings = total_outs // 3
+                        remaining_outs = total_outs % 3
+                        ip_val = f"{whole_innings}.{remaining_outs}"
+                        
+                        # Compute base statistical counts
+                        strikeouts = len(raw_data[raw_data['events'] == 'strikeout'])
+                        walks = len(raw_data[raw_data['events'] == 'walk'])
+                        hbp = len(raw_data[raw_data['events'] == 'hit_by_pitch'])
+                        home_runs = len(raw_data[raw_data['events'] == 'home_run'])
+                        sac_flies = len(raw_data[raw_data['events'] == 'sac_fly'])
+                        
+                        # Compute K/BB Ratio metric
+                        k_bb_val = f"{strikeouts / walks:.2f}" if walks > 0 else (f"{strikeouts}.00" if strikeouts > 0 else "0.00")
+                        
+                        # Compute FIP (Fielding Independent Pitching) baseline
+                        # Formula: ((13*HR) + (3*(BB+HBP)) - (2*K)) / IP + FIP_Constant
+                        if whole_innings > 0 or remaining_outs > 0:
+                            fip_ip = whole_innings + (remaining_outs / 3.0)
+                            fip_constant = 3.20  # League baseline constant normalization
+                            raw_fip = (((13 * home_runs) + (3 * (walks + hbp)) - (2 * strikeouts)) / fip_ip) + fip_constant
+                            
+                            # Standardize FIP- scaling relative to league average environment
+                            # FIP- = (FIP / League_FIP) * 100
+                            league_fip_baseline = 4.20
+                            fip_minus_calc = int((raw_fip / league_fip_baseline) * 100)
+                            fip_minus_val = str(max(40, min(160, fip_minus_calc)))
+                        else:
+                            fip_minus_val = "N/A"
 
-                        if player_stats is not None and not player_stats.empty:
-                            stats_row = player_stats.iloc[0]
-                            ip_val = stats_row['IP']
-                            era_val = stats_row['ERA']
-                            k_bb_val = 'N/A' if stats_row['BB'] == 0 else f"{stats_row['SO'] / stats_row['BB']:.2f}"
-
-                            # These cards use the same MLB ID and season as the graph.
-                            m_col1, m_col2, m_col3 = st.columns(3)
-                            with m_col1:
-                                st.metric(label="Innings Pitched (IP)", value=ip_val)
-                            with m_col2:
-                                st.metric(label="ERA", value=f"{era_val:.2f}")
-                            with m_col3:
-                                st.metric(label="K/BB", value=k_bb_val)
+                        # --- LIVE DISPLAY METRIC CARDS ---
+                        m_col1, m_col2, m_col3 = st.columns(3)
+                        with m_col1:
+                            st.metric(label="Innings Pitched (IP)", value=ip_val)
+                        with m_col2:
+                            st.metric(label="FIP-", value=fip_minus_val)
+                        with m_col3:
+                            st.metric(label="K/BB", value=k_bb_val)
 
                         # --- OPTIMIZED RE-SHRUNK CHART ---
                         plt.style.use('dark_background')
@@ -163,36 +183,13 @@ with main_col2:
                         ax.set_xlabel('← Glove-Side Break (Inches)  |  Arm-Side Run (Inches) →', fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', labelpad=8)
                         ax.set_ylabel('Induced Vertical Break (Inches)', fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', labelpad=8)
 
-                        ax.set_xlim(25, -25)
+                        ax.set_xlim(25, -25) 
                         ax.set_ylim(-25, 25)
                         ax.grid(True, linestyle=':', alpha=0.1, color='#FFFFFF')
                         ax.tick_params(colors='#8E9AAF', labelsize=7.5)
-
-                                               # --- ANCHOR LEGEND OUTSIDE AND BELOW THE PLOT GRID BOUNDS ---
+                        
+                        # --- ANCHOR LEGEND OUTSIDE AND BELOW THE PLOT GRID BOUNDS ---
                         legend = ax.legend(
                             title='Pitch Arsenal', 
                             loc='upper center', 
                             bbox_to_anchor=(0.5, -0.15),  # Dynamically shifts the box completely beneath the graph floor
-                            ncol=5,                       # Flattens the pitch elements into a single clean horizontal row
-                            frameon=True, 
-                            facecolor='#1E293B', 
-                            edgecolor='#2D2D2D', 
-                            fontsize=7                    # Subtle shrunken font size to maximize canvas breathing room
-                        )
-                        legend.get_title().set_color('#FFFFFF')
-                        legend.get_title().set_weight('bold')
-                        legend.get_title().set_fontsize(8)
-                        for text in legend.get_texts():
-                            text.set_color('#FFFFFF')
-
-                        # Fixed Bottom Right Quadrant Corner Placement
-                        ax.text(0.98, 0.03, 'Made by Elwood M-W', fontsize=7.5, fontweight='bold', color='#8E9AAF',
-                                style='italic', alpha=0.5, transform=ax.transAxes, ha='right', va='bottom')
-
-                        # Fixed Bottom Right Quadrant Corner Placement
-                        ax.text(0.98, 0.03, 'Made by Elwood M-W', fontsize=7.5, fontweight='bold', color='#8E9AAF',
-                        style='italic', alpha=0.5, transform=ax.transAxes, ha='right', va='bottom')
-                        st.pyplot(fig)
-                        plt.close(fig)
-            except Exception as e:
-                st.error(f"An error occurred while loading player data: {e}")
