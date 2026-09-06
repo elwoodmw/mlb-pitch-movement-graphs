@@ -171,12 +171,18 @@ with main_col2:
                         ax.set_title(player_input.upper(), fontsize=16, fontweight=900, fontfamily='Inter', color='#FFFFFF', pad=12, loc='left')
                                                 # Clean X-Axis Title Setup (Removed default label completely)
                                                # Completely clear the native label system to prevent stacking bugs
+                                              # 1. Completely clear out the native x-axis label to remove tracking noise
                         ax.set_xlabel('', labelpad=0)
 
-                        # Lock the text alignment precisely onto the numerical 0 coordinate of your chart
-                        ax.text(0, -29, '← Glove-Side Break (Inches)     |     Arm-Side Run (Inches) →', 
+                        # 2. Left-align the Glove-Side label right under the 25-inch corner marker
+                        ax.text(0.0, -0.07, '← Glove-Side Break (Inches)', 
                                 fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', 
-                                ha='center', va='top')
+                                transform=ax.transAxes, ha='left', va='top')
+
+                        # 3. Right-align the Arm-Side label right under the -25-inch corner marker
+                        ax.text(1.0, -0.07, 'Arm-Side Run (Inches) →', 
+                                fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', 
+                                transform=ax.transAxes, ha='right', va='top')
 
                         ax.set_ylabel('Induced Vertical Break (Inches)', fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', labelpad=8)
 
