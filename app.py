@@ -1,9 +1,12 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
-from pybaseball import playerid_lookup, statcast_pitcher
-import pandas as pd
-import numpy as np
+from pybaseball import playerid_lookup, pitching_stats_bref, statcast_pitcher
+
+
+@st.cache_data(show_spinner=False)
+def load_season_pitching_stats(season):
+    return pitching_stats_bref(season)
 
 # Set up the website page config with a wide layout to support responsive tracking grids
 st.set_page_config(page_title="MLB Pitch Movement Graph Generator", layout="wide")
@@ -114,47 +117,26 @@ with main_col2:
                         top_pitches = movement_data['pitch_type'].value_counts().head(5).index.tolist()
                         core_arsenal = movement_data[movement_data['pitch_type'].isin(top_pitches)]
 
-                        # --- HARDCODED VERIFIED STATS DICTIONARY (2026 OFFICIAL LIVE BASEBALL REFERENCE LOGS) ---
-                        stats_archive = {
-                            ("Henderson, Logan", 2026): {"ip": "83.1", "fip_minus": "65", "k_bb": "6.64"},
-                            ("Chad Patrick", 2026): {"ip": "98.1", "fip_minus": "95", "k_bb": "2.21"},
-                            ("Patrick, Chad", 2026): {"ip": "98.1", "fip_minus": "95", "k_bb": "2.21"},
-                            ("Greene, Hunter", 2026): {"ip": "152.1", "fip_minus": "81", "k_bb": "3.42"},
-                            ("Misiorowski, Jacob", 2026): {"ip": "142.0", "fip_minus": "71", "k_bb": "2.85"}
-                        }
-                        
-                        lookup_key = (player_input, int(season_input))
-                        if lookup_key in stats_archive:
-                            ip_val = stats_archive[lookup_key]["ip"]
-                            fip_minus_val = stats_archive[lookup_key]["fip_minus"]
-                            k_bb_val = stats_archive[lookup_key]["k_bb"]
-                        else:
-                            # Dynamic processing engine fallback for any other custom player query
-                            unique_dates = raw_data['game_date'].nunique()
-                            total_pitches = len(raw_data)
-                            avg_pitches = total_pitches / max(1, unique_dates)
-                            
-                            if avg_pitches < 35:
-                                est_ip = max(1.0, round(unique_dates * 1.1, 1))
-                            else:
-                                est_ip = max(5.0, round(unique_dates * 5.2, 1))
-                                
-                            whole_innings = int(np.floor(est_ip))
-                            fractional = est_ip - whole_innings
-                            outs = 2 if fractional >= 0.6 else (1 if fractional > 0.2 else 0)
-                            ip_val = f"{whole_innings}.{outs}" if avg_pitches < 35 else f"{est_ip:.1f}"
-                            
-                            fip_minus_val = str(int(max(55, min(140, 100 + np.random.randint(-25, 25)))))
-                            k_bb_val = f"{max(1.10, min(8.50, round(2.8 + np.random.uniform(-0.5, 1.2), 2))):.2f}"
+                        try:
+                            season_stats = load_season_pitching_stats(int(season_input))
+                            player_stats = season_stats[season_stats['mlbID'] == player_id]
+                        except Exception:
+                            player_stats = None
 
-                        # --- METRIC DISPLAY CARDS ---
-                        m_col1, m_col2, m_col3 = st.columns(3)
-                        with m_col1:
-                            st.metric(label="Innings Pitched (IP)", value=ip_val)
-                        with m_col2:
-                            st.metric(label="FIP-", value=fip_minus_val)
-                        with m_col3:
-                            st.metric(label="K/BB", value=k_bb_val)
+                        if player_stats is not None and not player_stats.empty:
+                            stats_row = player_stats.iloc[0]
+                            ip_val = stats_row['IP']
+                            era_val = stats_row['ERA']
+                            k_bb_val = 'N/A' if stats_row['BB'] == 0 else f"{stats_row['SO'] / stats_row['BB']:.2f}"
+
+                            # These cards use the same MLB ID and season as the graph.
+                            m_col1, m_col2, m_col3 = st.columns(3)
+                            with m_col1:
+                                st.metric(label="Innings Pitched (IP)", value=ip_val)
+                            with m_col2:
+                                st.metric(label="ERA", value=f"{era_val:.2f}")
+                            with m_col3:
+                                st.metric(label="K/BB", value=k_bb_val)
 
                         # --- OPTIMIZED RE-SHRUNK CHART ---
                         plt.style.use('dark_background')
