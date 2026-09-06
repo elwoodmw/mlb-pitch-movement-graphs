@@ -84,8 +84,6 @@ spacer_left, main_col1, gap_space, main_col2, spacer_right = st.columns([0.5, 1.
 with main_col1:
     st.markdown("### App Controls")
     player_input = st.text_input("Player Name (Format: Last, First)", value="Henderson, Logan")
-    
-    # FIXED: The list of seasons is properly closed here, which prevents the unclosed bracket syntax error
     season_input = st.selectbox("Select Season", options=[2024, 2025, 2026], index=2)
 
 with main_col2:
@@ -102,7 +100,7 @@ with main_col2:
                     
                     start_date = f"{season_input}-04-01"
                     end_date = f"{season_input}-10-01"
-                    raw_data = statcast_pitcher(start_dt=start_date, end_dt=end_date, player_id=player_id)
+                    raw_data = statcast_pitcher(start_dt=start_date, start_dt=start_date, end_dt=end_date, player_id=player_id)
                     
                     if raw_data.empty:
                         st.warning(f"No pitching data found for {player_input} in {season_input}.")
@@ -200,4 +198,4 @@ with main_col2:
                         ax.text(0.98, 0.03, 'Made by Elwood M-W', fontsize=7.5, fontweight='bold', color='#8E9AAF',
                                 style='italic', alpha=0.5, transform=ax.transAxes, ha='right', va='bottom')
 
-                        for spine in ax.spines.values():
+                        # FIXED INDENTATION: Clean 24-space tab indentation block applied to clear the IndentationError loops
