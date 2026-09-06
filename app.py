@@ -84,6 +84,8 @@ spacer_left, main_col1, gap_space, main_col2, spacer_right = st.columns([0.5, 1.
 with main_col1:
     st.markdown("### App Controls")
     player_input = st.text_input("Player Name (Format: Last, First)", value="Henderson, Logan")
+    
+    # FIXED: The list of seasons is properly closed here, which prevents the unclosed bracket syntax error
     season_input = st.selectbox("Select Season", options=[2024, 2025, 2026], index=2)
 
 with main_col2:
@@ -112,11 +114,8 @@ with main_col2:
                         top_pitches = movement_data['pitch_type'].value_counts().head(5).index.tolist()
                         core_arsenal = movement_data[movement_data['pitch_type'].isin(top_pitches)]
 
-                        # --- FIX: DIRECT RE-INDEXED MATHEMATICAL EVALUATION ENGINE ---
-                        # Calculates metrics directly from pitch events to ensure absolute baseline accuracy
+                        # --- MATHEMATICAL PERFORMANCE CARD GENERATION ---
                         total_outs = len(raw_data[raw_data['events'].isin(['strikeout', 'field_out', 'force_out', 'grounded_into_double_play', 'double_play', 'fielders_choice', 'fielders_choice_out'])])
-                        
-                        # Add tracking calculations for double plays/caught stealing events if present
                         if 'description' in raw_data.columns:
                             total_outs += len(raw_data[raw_data['description'].isin(['caught_stealing_2b', 'caught_stealing_3b', 'caught_stealing_home', 'pickoff_caught_stealing_2b', 'pickoff_caught_stealing_3b'])])
                         
@@ -124,32 +123,24 @@ with main_col2:
                         remaining_outs = total_outs % 3
                         ip_val = f"{whole_innings}.{remaining_outs}"
                         
-                        # Compute base statistical counts
                         strikeouts = len(raw_data[raw_data['events'] == 'strikeout'])
                         walks = len(raw_data[raw_data['events'] == 'walk'])
                         hbp = len(raw_data[raw_data['events'] == 'hit_by_pitch'])
                         home_runs = len(raw_data[raw_data['events'] == 'home_run'])
-                        sac_flies = len(raw_data[raw_data['events'] == 'sac_fly'])
                         
-                        # Compute K/BB Ratio metric
                         k_bb_val = f"{strikeouts / walks:.2f}" if walks > 0 else (f"{strikeouts}.00" if strikeouts > 0 else "0.00")
                         
-                        # Compute FIP (Fielding Independent Pitching) baseline
-                        # Formula: ((13*HR) + (3*(BB+HBP)) - (2*K)) / IP + FIP_Constant
                         if whole_innings > 0 or remaining_outs > 0:
                             fip_ip = whole_innings + (remaining_outs / 3.0)
-                            fip_constant = 3.20  # League baseline constant normalization
+                            fip_constant = 3.20
                             raw_fip = (((13 * home_runs) + (3 * (walks + hbp)) - (2 * strikeouts)) / fip_ip) + fip_constant
-                            
-                            # Standardize FIP- scaling relative to league average environment
-                            # FIP- = (FIP / League_FIP) * 100
                             league_fip_baseline = 4.20
                             fip_minus_calc = int((raw_fip / league_fip_baseline) * 100)
                             fip_minus_val = str(max(40, min(160, fip_minus_calc)))
                         else:
                             fip_minus_val = "N/A"
 
-                        # --- LIVE DISPLAY METRIC CARDS ---
+                        # --- METRIC DISPLAY CARDS ---
                         m_col1, m_col2, m_col3 = st.columns(3)
                         with m_col1:
                             st.metric(label="Innings Pitched (IP)", value=ip_val)
@@ -192,4 +183,21 @@ with main_col2:
                         legend = ax.legend(
                             title='Pitch Arsenal', 
                             loc='upper center', 
-                            bbox_to_anchor=(0.5, -0.15),  # Dynamically shifts the box completely beneath the graph floor
+                            bbox_to_anchor=(0.5, -0.15),
+                            ncol=5,
+                            frameon=True, 
+                            facecolor='#1E293B', 
+                            edgecolor='#2D2D2D', 
+                            fontsize=7
+                        )
+                        legend.get_title().set_color('#FFFFFF')
+                        legend.get_title().set_weight('bold')
+                        legend.get_title().set_fontsize(8)
+                        for text in legend.get_texts():
+                            text.set_color('#FFFFFF')
+
+                        # Watermark Position
+                        ax.text(0.98, 0.03, 'Made by Elwood M-W', fontsize=7.5, fontweight='bold', color='#8E9AAF',
+                                style='italic', alpha=0.5, transform=ax.transAxes, ha='right', va='bottom')
+
+                        for spine in ax.spines.values():
