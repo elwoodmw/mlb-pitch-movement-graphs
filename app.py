@@ -189,7 +189,7 @@ with main_col2:
                         ax.axvline(0, color='#2D2D2D', linewidth=1.5, zorder=1)
 
                         ax.set_title(player_input.upper(), fontsize=16, fontweight=900, fontfamily='Inter', color='#FFFFFF', pad=12, loc='left')
-                        ax.set_xlabel('← Glove-Side Break (Inches)  |  Arm-Side Run (Inches) →', fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', loc="left", labelpad=8)
+                        ax.set_xlabel('← Glove-Side Break (Inches)  |  Arm-Side Run (Inches) →', fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', loc='left', labelpad=8)
                         ax.set_ylabel('Induced Vertical Break (Inches)', fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', labelpad=8)
 
                         ax.set_xlim(25, -25) 
