@@ -182,7 +182,7 @@ with main_col2:
                                 transform=ax.transAxes, ha='left', va='top', label="glove_side_text")
 
                         # 3. Perfect Right Alignment: Locked exactly to the right border edge
-                        ax.text(.965, -0.06, '|  Arm-Side Run (Inches) →', 
+                        ax.text(.9625, -0.06, '|  Arm-Side Run (Inches) →', 
                                 fontsize=7.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', 
                                 transform=ax.transAxes, ha='right', va='top', label="arm_side_text")
 
