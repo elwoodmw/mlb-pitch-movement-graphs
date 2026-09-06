@@ -1,3 +1,5 @@
+from datetime import date
+
 import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -84,7 +86,8 @@ spacer_left, main_col1, gap_space, main_col2, spacer_right = st.columns([0.5, 1.
 with main_col1:
     st.markdown("### App Controls")
     player_input = st.text_input("Player Name (Format: Last, First)", value="Henderson, Logan")
-    season_input = st.selectbox("Select Season", options=[2024, 2025, 2026], index=2)
+    season_options = list(range(2021, date.today().year + 1))
+    season_input = st.selectbox("Select Season", options=season_options, index=len(season_options) - 1)
 
 with main_col2:
     if player_input:
