@@ -172,17 +172,18 @@ with main_col2:
                                                 # Clean X-Axis Title Setup (Removed default label completely)
                                                # Completely clear the native label system to prevent stacking bugs
                                               # 1. Completely clear out the native x-axis label to remove tracking noise
+                                               # 1. Clear out the native label tracking system completely
                         ax.set_xlabel('', labelpad=0)
 
-                        # 2. Left-align the Glove-Side label right under the 25-inch corner marker
-                        ax.text(0.0, -0.07, '← Glove-Side Break (Inches)', 
-                                fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', 
-                                transform=ax.transAxes, ha='left', va='top')
+                        # 2. Left-aligned Glove-Side identifier with explicit memory tracking keys
+                        ax.text(0.0, -0.06, '← Glove-Side Break (Inches)', 
+                                fontsize=7.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', 
+                                transform=ax.transAxes, ha='left', va='top', label="glove_side_text")
 
-                        # 3. Right-align the Arm-Side label right under the -25-inch corner marker
-                        ax.text(1.0, -0.07, 'Arm-Side Run (Inches) →', 
-                                fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', 
-                                transform=ax.transAxes, ha='right', va='top')
+                        # 3. Right-aligned Arm-Side identifier with explicit memory tracking keys
+                        ax.text(1.0, -0.06, 'Arm-Side Run (Inches) →', 
+                                fontsize=7.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', 
+                                transform=ax.transAxes, ha='right', va='top', label="arm_side_text")
 
                         ax.set_ylabel('Induced Vertical Break (Inches)', fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', labelpad=8)
 
