@@ -170,11 +170,13 @@ with main_col2:
 
                         ax.set_title(player_input.upper(), fontsize=16, fontweight=900, fontfamily='Inter', color='#FFFFFF', pad=12, loc='left')
                                                 # Clean X-Axis Title Setup (Removed default label completely)
+                                               # Completely clear the native label system to prevent stacking bugs
                         ax.set_xlabel('', labelpad=0)
-                        
-                                                # FIX OVERLAP: Clear out all individual ax.text lines and replace with one balanced string
-                        label_string = "← Glove-Side Break (Inches)     |     Arm-Side Run (Inches) →"
-                        ax.set_xlabel(label_string, fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', labelpad=10)
+
+                        # Lock the text alignment precisely onto the numerical 0 coordinate of your chart
+                        ax.text(0, -29, '← Glove-Side Break (Inches)     |     Arm-Side Run (Inches) →', 
+                                fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', 
+                                ha='center', va='top')
 
                         ax.set_ylabel('Induced Vertical Break (Inches)', fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', labelpad=8)
 
