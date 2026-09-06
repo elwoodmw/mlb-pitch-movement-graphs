@@ -1,3 +1,5 @@
+from datetime import date
+
 import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -116,7 +118,8 @@ spacer_left, main_col1, gap_space, main_col2, spacer_right = st.columns([0.5, 1.
 with main_col1:
     st.markdown("### App Controls")
     player_input = st.text_input("Player Name (Format: Last, First)", value="Henderson, Logan")
-    season_input = st.selectbox("Select Season", options=[2024, 2025, 2026], index=2)
+    season_options = list(range(2021, date.today().year + 1))
+    season_input = st.selectbox("Select Season", options=season_options, index=len(season_options) - 1)
 
 with main_col2:
     if player_input:
@@ -133,6 +136,28 @@ with main_col2:
                     start_date = f"{season_input}-04-01"
                     end_date = f"{season_input}-10-01"
                     raw_data = statcast_pitcher(start_dt=start_date, end_dt=end_date, player_id=player_id)
+
+                    # Player cards use the official season record independently of chart data.
+                    reference_player = get_reference_player_stats(season_input, player_id)
+                    if reference_player is None:
+                        ip_val = era_val = k_bb_val = "N/A"
+                    else:
+                        total_outs = ip_notation_to_outs(reference_player['IP'])
+                        whole_innings, remaining_outs = divmod(total_outs, 3)
+                        ip_val = f"{whole_innings}.{remaining_outs}"
+
+                        strikeouts = int(reference_player['SO'])
+                        walks = int(reference_player['BB'])
+                        era_val = f"{float(reference_player['ERA']):.2f}"
+                        k_bb_val = f"{strikeouts / walks:.2f}" if walks else f"{strikeouts}.00"
+
+                    m_col1, m_col2, m_col3 = st.columns(3)
+                    with m_col1:
+                        st.metric(label="Innings Pitched (IP)", value=ip_val)
+                    with m_col2:
+                        st.metric(label="ERA", value=era_val)
+                    with m_col3:
+                        st.metric(label="K/BB", value=k_bb_val)
                     
                     if raw_data.empty:
                         st.warning(f"No pitching data found for {player_input} in {season_input}.")
@@ -143,29 +168,6 @@ with main_col2:
 
                         top_pitches = movement_data['pitch_type'].value_counts().head(5).index.tolist()
                         core_arsenal = movement_data[movement_data['pitch_type'].isin(top_pitches)]
-
-                        # --- MATHEMATICAL PERFORMANCE CARD GENERATION ---
-                        reference_player = get_reference_player_stats(season_input, player_id)
-                        if reference_player is None:
-                            ip_val = era_val = k_bb_val = "N/A"
-                        else:
-                            total_outs = ip_notation_to_outs(reference_player['IP'])
-                            whole_innings, remaining_outs = divmod(total_outs, 3)
-                            ip_val = f"{whole_innings}.{remaining_outs}"
-
-                            strikeouts = int(reference_player['SO'])
-                            walks = int(reference_player['BB'])
-                            era_val = f"{float(reference_player['ERA']):.2f}"
-                            k_bb_val = f"{strikeouts / walks:.2f}" if walks else f"{strikeouts}.00"
-
-                        # --- METRIC DISPLAY CARDS ---
-                        m_col1, m_col2, m_col3 = st.columns(3)
-                        with m_col1:
-                            st.metric(label="Innings Pitched (IP)", value=ip_val)
-                        with m_col2:
-                            st.metric(label="ERA", value=era_val)
-                        with m_col3:
-                            st.metric(label="K/BB", value=k_bb_val)
 
                         # --- OPTIMIZED RE-SHRUNK CHART ---
                         plt.style.use('dark_background')
