@@ -113,9 +113,26 @@ with main_col2:
                         core_arsenal = movement_data[movement_data['pitch_type'].isin(top_pitches)]
 
                         # --- MATHEMATICAL PERFORMANCE CARD GENERATION ---
-                        total_outs = len(raw_data[raw_data['events'].isin(['strikeout', 'field_out', 'force_out', 'grounded_into_double_play', 'double_play', 'fielders_choice', 'fielders_choice_out'])])
-                        if 'description' in raw_data.columns:
-                            total_outs += len(raw_data[raw_data['description'].isin(['caught_stealing_2b', 'caught_stealing_3b', 'caught_stealing_home', 'pickoff_caught_stealing_2b', 'pickoff_caught_stealing_3b'])])
+                        out_weights = {
+                            'strikeout': 1,
+                            'strikeout_double_play': 2,
+                            'field_out': 1,
+                            'force_out': 1,
+                            'grounded_into_double_play': 2,
+                            'double_play': 2,
+                            'sac_bunt': 1,
+                            'sac_fly': 1,
+                            'sac_fly_double_play': 2,
+                            'fielders_choice': 1,
+                            'fielders_choice_out': 1,
+                            'triple_play': 3,
+                            'caught_stealing_2b': 1,
+                            'caught_stealing_3b': 1,
+                            'caught_stealing_home': 1,
+                            'pickoff_caught_stealing_2b': 1,
+                            'pickoff_caught_stealing_3b': 1,
+                        }
+                        total_outs = int(raw_data['events'].map(out_weights).fillna(0).sum())
                         
                         whole_innings = total_outs // 3
                         remaining_outs = total_outs % 3
