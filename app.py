@@ -172,10 +172,9 @@ with main_col2:
                                                 # Clean X-Axis Title Setup (Removed default label completely)
                         ax.set_xlabel('', labelpad=0)
                         
-                        # Perfect Zero-Center Alignment using independent text anchors
-                        ax.text(0.15, -0.08, '← Glove-Side Break (Inches)', fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', transform=ax.transAxes, ha='left', va='top')
-                        ax.text(0.50, -0.08, '|', fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#2D2D2D', transform=ax.transAxes, ha='center', va='top')
-                        ax.text(0.85, -0.08, 'Arm-Side Run (Inches) →', fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', transform=ax.transAxes, ha='right', va='top')
+                                                # FIX OVERLAP: Clear out all individual ax.text lines and replace with one balanced string
+                        label_string = "← Glove-Side Break (Inches)     |     Arm-Side Run (Inches) →"
+                        ax.set_xlabel(label_string, fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', labelpad=10)
 
                         ax.set_ylabel('Induced Vertical Break (Inches)', fontsize=8.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', labelpad=8)
 
