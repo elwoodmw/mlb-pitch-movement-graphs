@@ -173,15 +173,16 @@ with main_col2:
                                                # Completely clear the native label system to prevent stacking bugs
                                               # 1. Completely clear out the native x-axis label to remove tracking noise
                                                # 1. Clear out the native label tracking system completely
+                                               # 1. Clear out the native label tracking system completely
                         ax.set_xlabel('', labelpad=0)
 
-                        # 2. Left-aligned Glove-Side identifier with explicit memory tracking keys
-                        ax.text(0.0, -0.06, '← Glove-Side Break (Inches)', 
+                        # 2. Perfect Left Alignment: Locked exactly to the left border edge
+                        ax.text(-0.02, -0.06, '← Glove-Side Break (Inches)', 
                                 fontsize=7.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', 
                                 transform=ax.transAxes, ha='left', va='top', label="glove_side_text")
 
-                        # 3. Right-aligned Arm-Side identifier with explicit memory tracking keys
-                        ax.text(1.0, -0.06, 'Arm-Side Run (Inches) →', 
+                        # 3. Perfect Right Alignment: Locked exactly to the right border edge
+                        ax.text(1.02, -0.06, 'Arm-Side Run (Inches) →', 
                                 fontsize=7.5, fontweight='bold', fontfamily='Inter', color='#8E9AAF', 
                                 transform=ax.transAxes, ha='right', va='top', label="arm_side_text")
 
