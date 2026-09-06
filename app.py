@@ -147,7 +147,7 @@ with main_col2:
                         # --- MATHEMATICAL PERFORMANCE CARD GENERATION ---
                         reference_player = get_reference_player_stats(season_input, player_id)
                         if reference_player is None:
-                            ip_val = fip_minus_val = k_bb_val = "N/A"
+                            ip_val = era_val = k_bb_val = "N/A"
                         else:
                             total_outs = ip_notation_to_outs(reference_player['IP'])
                             whole_innings, remaining_outs = divmod(total_outs, 3)
@@ -155,23 +155,15 @@ with main_col2:
 
                             strikeouts = int(reference_player['SO'])
                             walks = int(reference_player['BB'])
-                            hbp = int(reference_player['HBP'])
-                            home_runs = int(reference_player['HR'])
+                            era_val = f"{float(reference_player['ERA']):.2f}"
                             k_bb_val = f"{strikeouts / walks:.2f}" if walks else f"{strikeouts}.00"
-
-                            fip_ip = total_outs / 3.0
-                            fip_constant = 3.20
-                            raw_fip = (((13 * home_runs) + (3 * (walks + hbp)) - (2 * strikeouts)) / fip_ip) + fip_constant
-                            league_fip_baseline = 4.20
-                            fip_minus_calc = int((raw_fip / league_fip_baseline) * 100)
-                            fip_minus_val = str(max(40, min(160, fip_minus_calc)))
 
                         # --- METRIC DISPLAY CARDS ---
                         m_col1, m_col2, m_col3 = st.columns(3)
                         with m_col1:
                             st.metric(label="Innings Pitched (IP)", value=ip_val)
                         with m_col2:
-                            st.metric(label="FIP-", value=fip_minus_val)
+                            st.metric(label="ERA", value=era_val)
                         with m_col3:
                             st.metric(label="K/BB", value=k_bb_val)
 
