@@ -1,9 +1,41 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
-from pybaseball import playerid_lookup, statcast_pitcher
-import pandas as pd
-import numpy as np
+from pybaseball import pitching_stats_bref, playerid_lookup, statcast_pitcher
+
+
+MASTER_COLORS = {
+    'FF': '#00B4D8', 'SI': '#00F5D4', 'FC': '#FFD166',
+    'SL': '#F77F00', 'ST': '#FF9F1C', 'CH': '#00A859',
+    'CU': '#7209B7', 'KC': '#9B5DE5', 'FS': '#FF006E', 'SV': '#E040FB'
+}
+
+
+@st.cache_data(show_spinner=False)
+def load_baseball_reference_stats(season):
+    return pitching_stats_bref(season)
+
+
+def ip_notation_to_outs(ip_value):
+    ip_text = str(ip_value)
+    whole_innings, _, remaining_outs = ip_text.partition('.')
+    outs = int(remaining_outs[:1] or 0)
+    if outs not in (0, 1, 2):
+        raise ValueError(f"Unexpected Baseball-Reference IP value: {ip_value}")
+    return int(float(whole_innings)) * 3 + outs
+
+
+def get_reference_player_stats(season, player_id):
+    try:
+        reference_stats = load_baseball_reference_stats(int(season))
+        player_stats = reference_stats[
+            reference_stats['mlbID'].astype(str) == str(player_id)
+        ]
+        if not player_stats.empty:
+            return player_stats.iloc[0]
+    except Exception:
+        pass
+    return None
 
 # Set up the website page config with a wide layout to support responsive tracking grids
 st.set_page_config(page_title="MLB Pitch Movement Graph Generator", layout="wide")
@@ -113,47 +145,26 @@ with main_col2:
                         core_arsenal = movement_data[movement_data['pitch_type'].isin(top_pitches)]
 
                         # --- MATHEMATICAL PERFORMANCE CARD GENERATION ---
-                        out_weights = {
-                            'strikeout': 1,
-                            'strikeout_double_play': 2,
-                            'field_out': 1,
-                            'force_out': 1,
-                            'grounded_into_double_play': 2,
-                            'double_play': 2,
-                            'sac_bunt': 1,
-                            'sac_fly': 1,
-                            'sac_fly_double_play': 2,
-                            'fielders_choice': 1,
-                            'fielders_choice_out': 1,
-                            'triple_play': 3,
-                            'caught_stealing_2b': 1,
-                            'caught_stealing_3b': 1,
-                            'caught_stealing_home': 1,
-                            'pickoff_caught_stealing_2b': 1,
-                            'pickoff_caught_stealing_3b': 1,
-                        }
-                        total_outs = int(raw_data['events'].map(out_weights).fillna(0).sum())
-                        
-                        whole_innings = total_outs // 3
-                        remaining_outs = total_outs % 3
-                        ip_val = f"{whole_innings}.{remaining_outs}"
-                        
-                        strikeouts = len(raw_data[raw_data['events'] == 'strikeout'])
-                        walks = len(raw_data[raw_data['events'] == 'walk'])
-                        hbp = len(raw_data[raw_data['events'] == 'hit_by_pitch'])
-                        home_runs = len(raw_data[raw_data['events'] == 'home_run'])
-                        
-                        k_bb_val = f"{strikeouts / walks:.2f}" if walks > 0 else (f"{strikeouts}.00" if strikeouts > 0 else "0.00")
-                        
-                        if whole_innings > 0 or remaining_outs > 0:
-                            fip_ip = whole_innings + (remaining_outs / 3.0)
+                        reference_player = get_reference_player_stats(season_input, player_id)
+                        if reference_player is None:
+                            ip_val = fip_minus_val = k_bb_val = "N/A"
+                        else:
+                            total_outs = ip_notation_to_outs(reference_player['IP'])
+                            whole_innings, remaining_outs = divmod(total_outs, 3)
+                            ip_val = f"{whole_innings}.{remaining_outs}"
+
+                            strikeouts = int(reference_player['SO'])
+                            walks = int(reference_player['BB'])
+                            hbp = int(reference_player['HBP'])
+                            home_runs = int(reference_player['HR'])
+                            k_bb_val = f"{strikeouts / walks:.2f}" if walks else f"{strikeouts}.00"
+
+                            fip_ip = total_outs / 3.0
                             fip_constant = 3.20
                             raw_fip = (((13 * home_runs) + (3 * (walks + hbp)) - (2 * strikeouts)) / fip_ip) + fip_constant
                             league_fip_baseline = 4.20
                             fip_minus_calc = int((raw_fip / league_fip_baseline) * 100)
                             fip_minus_val = str(max(40, min(160, fip_minus_calc)))
-                        else:
-                            fip_minus_val = "N/A"
 
                         # --- METRIC DISPLAY CARDS ---
                         m_col1, m_col2, m_col3 = st.columns(3)
@@ -170,12 +181,10 @@ with main_col2:
                         fig.patch.set_facecolor('#121212')
                         ax.set_facecolor('#121212')
 
-                        master_colors = {
-                            'FF': '#00B4D8', 'SI': '#00F5D4', 'FC': '#FFD166', 
-                            'SL': '#F77F00', 'ST': '#FF9F1C', 'CH': '#00A859', 
-                            'CU': '#7209B7', 'KC': '#9B5DE5', 'FS': '#FF006E', 'SV': '#E040FB'
+                        color_palette = {
+                            pitch: MASTER_COLORS.get(pitch, sns.color_palette("Set2")[i % 8])
+                            for i, pitch in enumerate(top_pitches)
                         }
-                        color_palette = {p: master_colors.get(p, sns.color_palette("Set2")[i % 8]) for i, p in enumerate(top_pitches)}
 
                         sns.scatterplot(
                             data=core_arsenal, x='horiz_break_in', y='vert_break_in',
